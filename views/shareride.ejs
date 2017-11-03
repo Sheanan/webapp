@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>web app</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css">
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+
+    <style>
+
+    table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 120%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+
+
+    </style>
+</head>
+
+
+
+<body>
+
+
+
+
+
+<div class="container">
+  <div class="col-lg-4">
+
+<button type="button" id="go_to_home" class="btn btn-primary btn-md" style="float: left;margin-left: -24%;margin-top: 20%;">Home</button>
+
+    <div class="jumbotron text-center" style="margin-top: 40%;">
+      <h3>Share Ride</h3>
+        <form>
+          <div class="form-group">
+
+          <input type="text" class="form-control" id="source" placeholder="Source" name="Source" required>
+
+          </div>
+
+          <div class="form-group">
+
+            <input type="text" class="form-control" id="destination" placeholder="Destination" name="Destination" required>
+
+          </div>
+
+
+
+            <div class="form-group">
+                <div class='input-group date' id='datetimepicker6'>
+                <input type='text' id="dateandtime" class="form-control" placeholder="Date - time"/>
+                <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+              </div>
+            </div>
+
+
+         <div class="row" style="padding-bottom: 10%;padding-right: 10%;">
+
+              <button type="button" id="share_ride" class="btn btn-primary btn-md" style="float: left;margin-left: 6%;">Share</button>
+              <button type="button" id="request_ride" class="btn btn-primary btn-md" style="float: right;margin-right: -5%;">request</button>
+          </div>
+
+
+        </form>
+
+      </div>
+
+
+
+  </div>
+
+
+  <div class="col-lg-4" id="requestlist" style="margin-top: 12%;margin-left: 5%;">
+
+      <table id="requesttable">
+
+         <thead>
+        <tr>
+            <th>Request User</th>
+            <th>Email</th>
+            <th>Confirm</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+
+
+
+  </table>
+
+
+    </div>
+
+    <div class="col-lg-4"></div>
+
+
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+
+        <script type="text/javascript">
+
+
+
+        $(document).ready(function(){
+
+          $('#datetimepicker6').datetimepicker();
+
+            var request_data;
+
+          $("#share_ride").click(function(){
+
+            var source = $('#source').val();
+            var destination = $('#destination').val();
+            var dateandtime = $('#dateandtime').val();
+            var obj = {source:source,destination:destination,dateandtime: dateandtime};
+
+          //  alert("1");
+
+            $.ajax({
+              type: 'POST',
+              url: '/share_ride_database',
+              data: obj,
+              success: function(data){
+                //do something with the data via front-end framework
+                //location.reload();
+                console.log("saved share ride");
+              }
+            });
+
+            return false;
+
+          });
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+          $("#request_ride").click(function(){
+
+          //  var email="asdf@gmail.com";
+
+          var email =  localStorage.getItem("login_name");
+          var obj={email:email};
+
+            $.ajax({
+              type: 'POST',
+              url: '/check_for_ride_request',
+              data: obj,
+              success: function(data){
+                //do something with the data via front-end framework
+                //location.reload();
+
+                console.log(data);
+                console.log("inside request_ride");
+                request_data=data;
+
+
+                var temp_user=data[0].requesteduser;
+
+                for(var i = 0 ;i<temp_user.length;i++){
+
+                  if(temp_user[i]!=null)
+                  {
+                    var name = temp_user[i].name;
+                    var email = temp_user[i].email;
+                  //  var temp = "<tr><td>"+title+"</td><td>"+ingredients+"</td>"+"<td><img src=+"image+"></img></td>"+"</tr>"
+                    tData="<tr><td>"+name+"</td><td>"+email+"</td><td> <button id=\"request\" type=\"button\" class=\"btn btn-link\">OK</button></td></tr>"
+                    //var tData = "<tr><td>"+title+"</td><td>"+ingredients+"</td></tr>"
+                    $("#requesttable").append(tData);
+                  }
+                }
+
+
+
+
+                $('#requesttable').find('tr').click( function(){
+
+                  //alert('You clicked row '+ ($(this).index()+1) );
+
+                  var i= $(this).index()
+
+                  alert(i);
+
+                  var ownername=localStorage.getItem("login_name");
+                  var requestername=temp_user[5].email;
+                  var source=request_data[0].source;
+                  var destination=request_data[0].destination;
+
+
+                  var obj = {ownername:ownername,requestername:requestername,source:source,destination:destination};
+
+
+                  $.ajax({
+                    type: 'POST',
+                    url: '/update_notification',
+                    data: obj,
+                    success: function(data){
+                      //do something with the data via front-end framework
+                      //location.reload();
+                      console.log("update_notification");
+                    }
+                  });
+                  return false;
+
+
+                });
+
+
+
+
+              }
+            });
+
+            return false;
+
+          });
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        $("#go_to_home").click(function(){
+
+          $.ajax({
+            type: 'GET',
+            url: '/home',
+            success: function(data){
+              //do something with the data via front-end framework
+              //location.reload();
+              //renderHtml(data);
+
+              window.location.pathname="/home"
+            }
+          });
+
+          return false;
+        });
+
+        
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+        });
+
+</script>
+</body>
+</html>
